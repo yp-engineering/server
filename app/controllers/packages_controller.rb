@@ -6,18 +6,15 @@ class PackagesController < ApplicationController
 
   def index
     # TODO name should really be Package.default_search_attribute
-
-    exact_match = params[:exact] && params[:exact] == '1' || false
     @search_str = params[:name]
     sort = case params[:sort]
            when 'count'              then 'count'
            when 'count_reverse'      then 'count DESC'
-           when 'name'              then 'packages.name'
-           when 'name_reverse'      then 'packages.name DESC'
+           when 'name'              then 'name'
+           when 'name_reverse'      then 'name DESC'
            else
               # If a sort was not defined we'll make one default
               params[:sort] = 'name'
-             'packages.name'
            end
 
     conditions_values = []
@@ -50,45 +47,29 @@ class PackagesController < ApplicationController
     @mainmodel = Package 
     @search_str = params[:name]
     sort = case params[:sort]
-           when 'name'              then 'packages.name'
-           when 'name_reverse'      then 'packages.name DESC'
-           when 'filename'              then 'packages.filename'
-           when 'filename_reverse'      then 'packages.filename DESC'
-           when 'maintainer'        then 'packages.maintainer'
-           when 'maintainer_reverse'        then 'packages.maintainer DESC'
-           when 'os'        then 'packages.os'
-           when 'os_reverse'        then 'packages.os DESC'
-           when 'arch'        then 'packages.arch'
-           when 'arch_reverse'        then 'packages.arch DESC'
-           
+           when 'name'               then 'name'
+           when 'name_reverse'       then 'name DESC'
+           when 'filename'           then 'filename'
+           when 'filename_reverse'   then 'filename DESC'
+           when 'maintainer'         then 'maintainer'
+           when 'maintainer_reverse' then 'maintainer DESC'
+           when 'os'                 then 'os'
+           when 'os_reverse'         then 'os DESC'
+           when 'arch'               then 'arch'
+           when 'arch_reverse'       then 'arch DESC'
+           else
+             params[:sort] = 'name'
            end
-    # If a sort was not defined we'll make one default
-    if sort.nil?
-      params[:sort] = 'name'
-      sort = 'packages.name'
-    end
 
-    exact_match = params[:exact] && params[:exact] == '1' || false
 
-    conditions_query = []
     conditions_values = []
-    params.each_pair do |key, value|
-      next if key == 'action'
-      next if key == 'controller'
-      next if key == 'format'
-      next if key == 'page'
-      next if key == 'sort' 
-
-      if key == @mainmodel.default_search_attribute
-        if exact_match
-          conditions_query << "name = ?"
-          conditions_values << value
-        else
-          conditions_query << "name LIKE ?"
-          conditions_values << '%' + value + '%'
-        end
-      end
-    end
+    if exact_match
+      conditions_query = "name = ?"
+      conditions_values << @search_str
+    else
+      conditions_query = "name LIKE ?"
+      conditions_values << '%' + @search_str + '%'
+    end if @search_str
 
     if show_all
       join = nil
@@ -96,23 +77,14 @@ class PackagesController < ApplicationController
       join = "inner join client_packages as cp on packages.id = cp.package_id"
     end
 
-    if conditions_query.empty?
-      @packages = Package.paginate(:all,
-                                 #:include => includes,
-                                 :group => "packages.id",
-                                 :order => sort,
-                                 :joins => join,
-                                 :page => params[:page])
-    else
-      conditions_string = conditions_query.join(' AND ')
-      @packages = Package.paginate(:all,
-                                 #:include => includes,
-                                 :conditions => [ conditions_string, *conditions_values ],
-                                 :group => "packages.id",
-                                 :order => sort,
-                                 :joins => join,
-                                 :page => params[:page])
-    end
+    @packages = Package.
+      group(:id).
+      # noop if query is nil
+      where(conditions_query, *conditions_values).
+      order(sort).
+      joins(join).
+      page(params[:page]).
+      to_a
 
     respond_to do |format|
       format.html 
@@ -149,7 +121,7 @@ class PackagesController < ApplicationController
 
   def query_files_listing
     filename = params[:filename]
-    if File.exists?(File.join(AppConfig.upload_path, filename))
+    if filename && File.exists?(File.join(AppConfig.upload_path, filename))
       fip = Tpkg::files_in_package(File.join(AppConfig.upload_path, filename))
       files = (fip[:root] | fip [:reloc]).join("<br/>")
     else
@@ -180,5 +152,9 @@ class PackagesController < ApplicationController
       packages.merge!({key=> value}) if (key != "action" && key != "controller")
     end
     return packages
+  end
+
+  def exact_match
+    params[:exact] && params[:exact] == '1' || false
   end
 end
