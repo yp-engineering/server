@@ -29,6 +29,7 @@ module RailsUpgrade
     # If you change this key, all old sessions will become invalid!
     # Make sure the secret is at least 30 characters and all random, 
     # no regular words or you'll be exposed to dictionary attacks.
+    warn 'session secret should be moved to secrets.yml'
     config.action_controller.session = {
       :session_key => '_trunk_session',
       :secret      => '9b1c27a35892d8fbbb50ed309d09c02962f56b739f3ce521c99df3c4f8a2f611bc21ab9fdce060de62b091b06b9e879a7b10a82ab908c286463659f73cace48f'
@@ -37,20 +38,8 @@ module RailsUpgrade
     # Activate observers that should always be running
     # Please note that observers generated using script/generate observer need to have an _observer suffix
     # config.active_record.observers = :cacher, :garbage_collector, :forum_observer
-    config.active_record.observers = :user_observer
+
+    warn 'active_record.observers was removed'
+    # config.active_record.observers = :user_observer
   end
-end
-
-# Email receipients for the exception_notification plugin
-ExceptionNotifier.exception_recipients = %w(webmaster)
-ExceptionNotifier.sender_address = "\"TPKG Server App Error\""
-
-require 'will_paginate'
-require 'active_record_extensions'
-
-AppConfig = ConfigurationManager.new_manager
-if AppConfig.authentication_method == "restful-authentication"
-  include AuthenticatedSystem
-elsif AppConfig.authentication_method == "sso"
-  include YPCAuthenticatedSystem
 end

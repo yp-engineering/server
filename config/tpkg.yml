@@ -38,9 +38,6 @@ dependencies:
 - name: gem-mysql
   minimum_version: 2.7
   maximum_version: 2.7
-- name: gem-mislav-will_paginate
-  minimum_version: 2.3.8
-  maximum_version: 2.3.8
 - name: gem-facter
   minimum_version: 1.5.5
   maximum_version: 1.5.5

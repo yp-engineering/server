@@ -1,25 +1,47 @@
 Rails.application.routes.draw do
-  map.logout '/logout', :controller => 'sessions', :action => 'destroy'
-#  map.login '/login', :controller => 'sessions', :action => 'new'
-  map.register '/register', :controller => 'users', :action => 'create'
-  map.signup '/signup', :controller => 'users', :action => 'new'
-  map.activate '/activate/:activation_code', :controller => 'users',
-                    :action => 'activate', :activation_code => nil
+  match 'logout' => 'sessions#destroy', as: :logout, via: :any
+  match 'register' => 'users#create', as: :register, via: :any
+  match 'signup' => 'users#new', as: :signup, via: :any
+  match 'activate/:activation_code' => 'users#activate', activation_code: nil, as: :activate, via: :any
 
-  map.with_options :controller => 'sessions' do |session|
-    session.login 'login', :action => 'new', :conditions => {:method => :get}
-    session.login 'login', :action => 'create', :conditions => {:method => :post}
+  resources :sessions, path: '/login', only: [:new, :create]
+
+  resources :users do
+    member do
+      put 'suspend'
+      put 'unsuspend'
+      delete 'purge'
+    end
   end
+  resources :session
 
-  map.resources :users, :member => { :suspend   => :put,
-                                   :unsuspend => :put,
-                                   :purge     => :delete }
-  map.resource :session
-
-  map.resources :packages, :collection => { :field_names => :get, :search => :get, :download => :get, :query_files_listing => :get, :detail_index => :get }, :member => { :version_history => :get }
-  map.resources :clients,  :collection => { :field_names => :get, :search => :get }, :member => { :version_history => :get }
-  map.resources :uploads,  :collection => { :swfupload => :post }
-  map.resources :client_update
+  resources :packages do
+    collection do
+      get :field_names
+      get :search
+      get :download
+      get :query_files_listing
+      get :detail_index
+    end
+    member do
+      get :version_history
+    end
+  end
+  resources :clients do
+    collection do
+      get :field_names
+      get :search
+    end
+    member do
+      get :version_history
+    end
+  end
+  resources :uploads do
+   collection do
+     post :swfupload
+   end
+  end
+  resources :client_update
 
   # The priority is based upon order of creation: first created -> highest priority.
 
@@ -58,11 +80,11 @@ Rails.application.routes.draw do
   # See how all your routes lay out with "rake routes"
 
   # -- just remember to delete public/index.html.
-  map.connect '', :controller => "packages"
+  root 'packages#index'
 
   # Install the default routes as the lowest priority.
   # Note: These default routes make all actions in every controller accessible via GET requests. You should
   # consider removing the them or commenting them out if you're using named routes and resources.
-  map.connect ':controller/:action/:id'
-  map.connect ':controller/:action/:id.:format'
+
+  match '/:controller(/:action(/:id(.:format)))', via: :any
 end
