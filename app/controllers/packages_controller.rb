@@ -5,6 +5,8 @@ class PackagesController < ApplicationController
 #  skip_before_filter :verify_authenticity_token
 
   def index
+    # TODO name should really be Package.default_search_attribute
+
     exact_match = params[:exact] && params[:exact] == '1' || false
     @search_str = params[:name]
     sort = case params[:sort]
@@ -12,49 +14,28 @@ class PackagesController < ApplicationController
            when 'count_reverse'      then 'count DESC'
            when 'name'              then 'packages.name'
            when 'name_reverse'      then 'packages.name DESC'
+           else
+              # If a sort was not defined we'll make one default
+              params[:sort] = 'name'
+             'packages.name'
            end
 
-    # If a sort was not defined we'll make one default
-    if sort.nil?
-      params[:sort] = 'name'
-      sort = 'packages.name'
-    end
-
-    conditions_query = []
     conditions_values = []
-    params.each_pair do |key, value|
-      next if key == 'action'
-      next if key == 'controller'
-      next if key == 'format'
-      next if key == 'page'
-      next if key == 'sort'
-
-      if key == Package.default_search_attribute
-        if exact_match
-          conditions_query << "name = ?"
-          conditions_values << value
-        else
-          conditions_query << "name LIKE ?"
-          conditions_values << '%' + value + '%'
-        end
-      end
-    end
-
-    if !conditions_query.empty?
-      conditions_string = conditions_query.join(' AND ')
-      @packages = Package.paginate(:all,
-                                   :select => "packages.name, count(packages.name) as count",
-                                   :group => "packages.name",
-                                   :order => sort,
-                                   :conditions => [ conditions_string, *conditions_values ],
-                                   :page => params[:page])
+    if exact_match
+      conditions_query = "name = ?"
+      conditions_values << @search_str
     else
-      @packages = Package.paginate(:all,
-                                   :select => "packages.name, count(packages.name) as count",
-                                   :group => "packages.name",
-                                   :order => sort,
-                                   :page => params[:page])
-    end
+      conditions_query = "name LIKE ?"
+      conditions_values << '%' + @search_str + '%'
+    end if @search_str
+
+    @packages = Package.counts.
+      # noop if query is nil
+      where(conditions_query, *conditions_values).
+      order(sort).
+      page(params[:page]).
+      to_a # kind of weird
+
     respond_to do |format|
       format.html
       format.xml  { render :xml => @packages.to_xml(:dasherize => false) }
