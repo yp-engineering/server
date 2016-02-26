@@ -1,8 +1,8 @@
 class UploadsController < ApplicationController
-  before_filter :login_required, :except => :swfupload unless AppConfig.authentication_method == 'noauth'
+  before_filter :login_required unless AppConfig.authentication_method == 'noauth'
 
   # FIXME: Pass sessions through to allow cross-site forgery protection
-  protect_from_forgery :except => [:swfupload, :create]
+  protect_from_forgery :except => [:create]
 
   def index
     @uploads = Upload.paginate(:all, :page => params[:page], :order => "created_at DESC")
@@ -36,19 +36,6 @@ class UploadsController < ApplicationController
   rescue Exception => e
     render :text => "Failure: #{e}"
   end
-
-  # No longer supported
-#  def swfupload
-#    # swfupload action set in routes.rb
-#    @upload = Upload.new(:upload => params[:Filedata])
-#    @upload.uploader = session[:username]
-#    pkgfile = @upload.save!
-#
-#    # This returns the thumbnail url for handlers.js to use to display the thumbnail
-#    render :text => "Success"
-#  rescue Exception => e
-#    redirect_to :action => 'new'
-#  end
 
   def destroy
     @upload = Upload.find(params[:id])

@@ -46,3 +46,4 @@ group :development do
 end
 
 gem 'will_paginate', '~> 3.1'
+gem 'paperclip', '~> 4.3'
