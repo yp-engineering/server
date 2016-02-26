@@ -1,6 +1,5 @@
 require "action_mailer"
 require "exception_notifier"
-require "exception_notifier_helper"
 require "exception_notifiable"
 
 # Email receipients for the exception_notification plugin
