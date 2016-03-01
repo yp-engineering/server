@@ -82,7 +82,7 @@ class ClientsController < ApplicationController
 #    end
 
     # get list of installation history for this client
-    @installation_history = ClientPackageHistory.find(:all, :conditions => ["client_id = ?", params[:id]], :order => "created_at")
+    @installation_history = ClientPackageHistory.where(client_id: params[:id]).order("created_at")
 
     respond_to do |format|
       format.html

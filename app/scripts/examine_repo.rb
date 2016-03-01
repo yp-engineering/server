@@ -6,7 +6,7 @@ class ExamineRepo < ActiveRecord::Base
   Dir.glob(File.join(AppConfig.upload_path, '*.tpkg')) do | file |
     present_files << File.basename(file)
   end
-  existing_uploads = Upload.find(:all, :select => :upload_file_name).collect{ | upload | upload.upload_file_name}
+  existing_uploads = Upload.pluck :upload_file_name
 
   missing = present_files - existing_uploads
 

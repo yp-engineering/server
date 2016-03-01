@@ -19,7 +19,7 @@ module ActiveRecordExtensions
           attrs[attrib.to_s] = params[attrib.to_s]
         end
 
-        found = self.find_by!(attrs) unless attrs.empty?
+        found = self.find_by(attrs) unless attrs.empty?
         if found && !found.nil?
           return found
         else
