@@ -120,12 +120,14 @@ class PackagesController < ApplicationController
   end
 
   def query_files_listing
-    filename = params[:filename]
-    if filename && File.exists?(File.join(AppConfig.upload_path, filename))
+    filename = params[:filename] || ""
+    if filename.present? && File.exists?(File.join(AppConfig.upload_path, filename))
       fip = Tpkg::files_in_package(File.join(AppConfig.upload_path, filename))
-      files = (fip[:root] | fip [:reloc]).join("<br/>")
+      files = fip[:root] | fip [:reloc]
+      files << ("File %p contains no files" % filename) if files.empty?
+      files = files.join("<br/>")
     else
-      files = "File #{filename} doesn't exist on repo."
+      files = "File %p doesn't exist on repo." % filename
     end
     render :text => files
   end

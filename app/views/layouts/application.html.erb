@@ -19,22 +19,22 @@
 <p id="account_links">
 <a href="https://sourceforge.net/apps/trac/tpkg/wiki">Need help? Visit our wiki</a>
 |
-<%= link_to "Upload a package", :controller => "uploads", :action => "new" %>
+<%= link_to "Upload a package", new_upload_path %>
 |
-<%= link_to "Package Repo", "http://#{request.host}/tpkg/" %>
+<%= link_to "Package Repo", "/tpkg/" %>
 |
-<%= link_to "Package Listing", :controller => 'packages', :action => 'index' %>
+<%= link_to "Package Listing", packages_path %>
 |
-<%= link_to "Package Upload History", :controller => 'uploads', :action => 'index' %>
+<%= link_to "Package Upload History", uploads_path %>
 |
-<%= link_to "Clients", :controller => 'clients', :action => 'index' %>
+<%= link_to "Clients", clients_path %>
 |
 <%- if session[:username] -%>
 Welcome back, <%= session[:username] %>!
   <%- if AppConfig.authentication_method == "sso" -%>
     <%= link_to "Logout (SSO)", AppConfig.sso.logout_url %>
   <%- else -%>
-    <%= link_to "Logout", :controller => 'logout' %>
+    <%= link_to "Logout", logout_path %>
   <%- end -%>
 <%- end -%>
 </p>
