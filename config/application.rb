@@ -31,5 +31,7 @@ module RailsUpgrade
 
     warn 'active_record.observers was removed'
     # config.active_record.observers = :user_observer
+
+    config.autoload_paths << Rails.root.join("lib")
   end
 end
