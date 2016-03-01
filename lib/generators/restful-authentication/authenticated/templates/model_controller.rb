@@ -38,7 +38,7 @@ class <%= model_controller_class_name %>Controller < ApplicationController
 <% if options[:include_activation] %>
   def activate
     logout_keeping_session!
-    <%= file_name %> = <%= class_name %>.find_by_activation_code(params[:activation_code]) unless params[:activation_code].blank?
+    <%= file_name %> = <%= class_name %>.find_by!(activation_code: params[:activation_code]) unless params[:activation_code].blank?
     case
     when (!params[:activation_code].blank?) && <%= file_name %> && !<%= file_name %>.active?
       <%= file_name %>.activate!

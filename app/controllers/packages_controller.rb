@@ -44,7 +44,7 @@ class PackagesController < ApplicationController
     # whether we want to show all packages or only packages
     # that are currently installed
     show_all = true
-    @mainmodel = Package 
+    @mainmodel = Package
     @search_str = params[:name]
     sort = case params[:sort]
            when 'name'               then 'name'
@@ -87,7 +87,7 @@ class PackagesController < ApplicationController
       to_a
 
     respond_to do |format|
-      format.html 
+      format.html
       format.xml  { render :xml => @packages.to_xml(:dasherize => false) }
     end
   end
@@ -100,11 +100,11 @@ class PackagesController < ApplicationController
     # Get additional info regarding the package file
     @uploads = []
     if @package.filename
-      @uploads = Upload.find_all_by_upload_file_name(@package.filename, :order => "updated_at DESC")
+      @uploads = @package.uploads
     end
 
     respond_to do |format|
-      format.html 
+      format.html
       format.xml  { render :xml => @package.to_xml(:include => :client_packages, :dasherize => false) }
     end
 
@@ -140,10 +140,10 @@ class PackagesController < ApplicationController
 
   def delete_all
     Package.delete_all
-  end  
+  end
 
   # assuming that the packages list is sent from POST param with the following
-  # format 
+  # format
   # {p1[name]=>"package name", p1[version]=>"1.2", p2[name]=>"package name", p2[version]="3.1.3"}
   #
   def get_packages_info(params)

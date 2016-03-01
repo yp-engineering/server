@@ -27,7 +27,7 @@ Given "$actor is logged in" do |_, login|
 end
 
 Given "there is no $user_type user named '$login'" do |_, login|
-  @user = User.find_by_login(login)
+  @user = User.find_by!(login: login)
   @user.destroy! if @user
   @user.should be_nil
 end
@@ -102,7 +102,7 @@ end
 def create_user(user_params={})
   @user_params       ||= user_params
   post "/users", :user => user_params
-  @user = User.find_by_login(user_params['login'])
+  @user = User.find_by!(login: user_params['login'])
 end
 
 def create_user!(user_type, user_params)
@@ -119,7 +119,7 @@ def log_in_user user_params=nil
   @user_params ||= user_params
   user_params  ||= @user_params
   post "/session", user_params
-  @user = User.find_by_login(user_params['login'])
+  @user = User.find_by!(login: user_params['login'])
   controller.current_user
 end
 
