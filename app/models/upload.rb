@@ -8,6 +8,7 @@ end
 class Upload < ActiveRecord::Base
   AppConfig = ConfigurationManager.new_manager
   has_attached_file :upload, :path => "#{AppConfig.upload_path}:basename.:extension"
+  do_not_validate_attachment_file_type :upload
 
   before_post_process  :pre_process
 
@@ -16,6 +17,7 @@ class Upload < ActiveRecord::Base
       unless defined? Tpkg::metadata_from_package
         raise "Unable to verify package because tpkg client/lib is not installed on the server."
       end
+
       # Need to do a rough validation for the uploaded file
       begin
         metadata = Tpkg::metadata_from_package(upload.queued_for_write[:original].path)

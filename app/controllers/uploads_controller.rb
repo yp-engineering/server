@@ -22,7 +22,7 @@ class UploadsController < ApplicationController
 
   def create
     # Standard, one-at-a-time, upload action
-    @upload = Upload.new(params[:upload])
+    @upload = Upload.new(upload_params)
     @upload.uploader = session[:username]
     pkgfile = @upload.save!
 
@@ -33,14 +33,18 @@ class UploadsController < ApplicationController
 
     #redirect_to uploads_url
     render :text => "Success"
-  rescue Exception => e
-    render :text => "Failure: #{e}"
   end
 
   def destroy
     @upload = Upload.find(params[:id])
     @upload.destroy
     redirect_to uploads_url
+  end
+
+  private
+
+  def upload_params
+    params.require(:upload).permit(:upload)
   end
 end
 
