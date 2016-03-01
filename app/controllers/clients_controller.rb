@@ -5,44 +5,28 @@ class ClientsController < ApplicationController
   def index
     @mainmodel = Client
 
-    conditions_query = []
-    conditions_values = []
-    params.each_pair do |key, value|
-      next if key == 'action'
-      next if key == 'controller'
-      next if key == 'format'
-      next if key == 'page'
-      next if key == 'sort'
-
-      if key == @mainmodel.default_search_attribute
-        conditions_query << "name LIKE ?"
-        conditions_values << '%' + value + '%'
-      end
-    end
-
     sort = case params[:sort]
-           when 'name'              then 'clients.name'
-           when 'name_reverse'      then 'clients.name DESC'
+           when 'name'              then 'name'
+           when 'name_reverse'      then 'name DESC'
+           else
+             params[:sort] = 'name'
            end
-    # If a sort was not defined we'll make one default
-    if sort.nil?
-      params[:sort] = 'name'
-      sort = 'clients.name'
-    end
 
-    if conditions_query.empty?
-      @clients = Client.paginate(:all,
-                                 :order => sort,
-                                 #:include => includes,
-                                 :page => params[:page])
+    conditions_values = []
+    if exact_match
+      conditions_query = "name = ?"
+      conditions_values << @search_str
     else
-      conditions_string = conditions_query.join(' AND ')
-      @clients = Client.paginate(:all,
-                                 :order => sort,
-                                 #:include => includes,
-                                 :conditions => [ conditions_string, *conditions_values ],
-                                 :page => params[:page])
-    end
+      conditions_query = "name LIKE ?"
+      conditions_values << '%' + @search_str + '%'
+    end if @search_str
+
+    @clients = @mainmodel.
+      # noop if query is nil
+      where(conditions_query, *conditions_values).
+      order(sort).
+      page(params[:page]).
+      to_a # kind of weird
 
     respond_to do |format|
       format.html

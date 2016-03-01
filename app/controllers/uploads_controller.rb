@@ -5,7 +5,10 @@ class UploadsController < ApplicationController
   protect_from_forgery :except => [:create]
 
   def index
-    @uploads = Upload.paginate(:all, :page => params[:page], :order => "created_at DESC")
+    @uploads = Upload.
+      order("created_at DESC").
+      page(params[:page]).
+      to_a
     respond_to do |format|
       format.html
       format.xml  { render :xml => @clients.to_xml(:dasherize => false) }
